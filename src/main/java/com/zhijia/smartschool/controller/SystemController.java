@@ -13,18 +13,22 @@ import com.zhijia.smartschool.util.JwtHelper;
 import com.zhijia.smartschool.util.Result;
 import com.zhijia.smartschool.util.ResultCodeEnum;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/sms/system")
@@ -37,6 +41,23 @@ public class SystemController {
     private StudentService studentService;
     @Autowired
     private TeacherService teacherService;
+
+    @ApiOperation("头像上传统一接口")
+    @PostMapping("/headerImgUpload")
+    public Result uploadImg(MultipartFile multipartFile){
+        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+        String filename = multipartFile.getOriginalFilename();
+        int i = filename.lastIndexOf(".");
+        String suffix = filename.substring(i);
+        filename = uuid.concat(suffix);
+        String path = "C:/MyAllProject/SmartSchool/target/classes/public/upload/".concat(filename);
+        try {
+            multipartFile.transferTo(new File(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Result.ok("upload/".concat(filename));
+    }
 
     @GetMapping("/getInfo")
     public Result getInfo(@RequestHeader("token") String token){

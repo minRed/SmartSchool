@@ -52,7 +52,7 @@ public class Swagger2Config {
         //添加head参数end
 
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("webApi")
+                .groupName("校园管理系统")
                 .apiInfo(webApiInfo())
                 .select()
                 //可以测试请求头中：输入token
@@ -72,7 +72,7 @@ public class Swagger2Config {
     private ApiInfo webApiInfo(){
 
         return new ApiInfoBuilder()
-                .title("网站-API文档")
+                .title("校园管理系统")
                 .description("本文档描述了网站微服务接口定义")
                 .version("1.0")
                 .contact(new Contact("zhijia", "http://zhijia.xyz", "1597696755@qq.com"))

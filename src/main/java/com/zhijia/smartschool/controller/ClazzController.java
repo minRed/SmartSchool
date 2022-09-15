@@ -29,6 +29,13 @@ public class ClazzController {
     @Autowired
     private ClazzService clazzService;
 
+    @GetMapping("/getClazzs")
+    @ApiOperation("获取所有的班级列表")
+    public Result getClazzs(){
+        List<Clazz> list = clazzService.list();
+        return Result.ok(list);
+    }
+
     //GET /sms/clazzController/getClazzsByOpr/1/3?gradeName=%E4%B8%80%E5%B9%B4%E7%BA%A7&name=1 HTTP/1.1
     @ApiOperation("查询班级列表，带分页")
     @GetMapping("/getClazzsByOpr/{pageNo}/{pageSize}")
