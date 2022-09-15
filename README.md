@@ -1,0 +1,2 @@
+# SmartSchool
+school manage system
