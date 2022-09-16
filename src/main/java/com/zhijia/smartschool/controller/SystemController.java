@@ -1,6 +1,7 @@
 package com.zhijia.smartschool.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zhijia.smartschool.pojo.Admin;
 import com.zhijia.smartschool.pojo.LoginForm;
 import com.zhijia.smartschool.pojo.Student;
@@ -8,12 +9,10 @@ import com.zhijia.smartschool.pojo.Teacher;
 import com.zhijia.smartschool.service.AdminService;
 import com.zhijia.smartschool.service.StudentService;
 import com.zhijia.smartschool.service.TeacherService;
-import com.zhijia.smartschool.util.CreateVerifyCodeImage;
-import com.zhijia.smartschool.util.JwtHelper;
-import com.zhijia.smartschool.util.Result;
-import com.zhijia.smartschool.util.ResultCodeEnum;
+import com.zhijia.smartschool.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +41,67 @@ public class SystemController {
     @Autowired
     private TeacherService teacherService;
 
+
+    //    http://localhost:9001/sms/system/updatePwd/admin/123456
+    @ApiOperation("修改用户密码")
+    @PostMapping("/updatePwd/{oldPwd}/{newPwd}")
+    public Result updatePwd(
+            @ApiParam("旧密码") @PathVariable("oldPwd") String oldPwd,
+            @ApiParam("新密码") @PathVariable("newPwd") String newPwd,
+            @ApiParam("用户信息") @RequestHeader("token") String token) {
+
+        if (JwtHelper.isExpiration(token)) {
+            return Result.fail().message("身份认证已过期，请重新登录");
+        }
+        Integer userType = JwtHelper.getUserType(token);
+        Long userId = JwtHelper.getUserId(token);
+        String oldPassword = MD5.encrypt(oldPwd);
+        String newPassword = MD5.encrypt(newPwd);
+
+        switch (userType) {
+            case 1:
+                LambdaQueryWrapper<Admin> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(Admin::getId,userId);
+                queryWrapper.eq(Admin::getPassword, oldPassword);
+                Admin admin = adminService.getOne(queryWrapper);
+                if (admin != null) {
+                    admin.setPassword(newPassword);
+                    adminService.saveOrUpdate(admin);
+                }else{
+                    return Result.fail().message("原始密码错误");
+                }
+                break;
+            case 2:
+                LambdaQueryWrapper<Student> queryWrapper1 = new LambdaQueryWrapper<>();
+                queryWrapper1.eq(Student::getId,userId);
+                queryWrapper1.eq(Student::getPassword, oldPassword);
+                Student student = studentService.getOne(queryWrapper1);
+                if (student != null) {
+                    student.setPassword(newPassword);
+                    studentService.saveOrUpdate(student);
+                }else{
+                    return Result.fail().message("原始密码错误");
+                }
+                break;
+            case 3:
+                LambdaQueryWrapper<Teacher> queryWrapper2 = new LambdaQueryWrapper<>();
+                queryWrapper2.eq(Teacher::getId,userId);
+                queryWrapper2.eq(Teacher::getPassword, oldPassword);
+                Teacher teacher = teacherService.getOne(queryWrapper2);
+                if (teacher != null) {
+                    teacher.setPassword(newPassword);
+                    teacherService.saveOrUpdate(teacher);
+                }else{
+                    return Result.fail().message("原始密码错误");
+                }
+                break;
+        }
+        return Result.ok();
+
+
+    }
+
+
     @ApiOperation("头像上传统一接口")
     @PostMapping("/headerImgUpload")
     public Result uploadImg(MultipartFile multipartFile){
@@ -59,6 +119,7 @@ public class SystemController {
         return Result.ok("upload/".concat(filename));
     }
 
+    @ApiOperation("获取用户信息")
     @GetMapping("/getInfo")
     public Result getInfo(@RequestHeader("token") String token){
         if (JwtHelper.isExpiration(token)){
@@ -89,6 +150,7 @@ public class SystemController {
         return Result.ok(map);
     }
 
+    @ApiOperation("获取验证码")
     @GetMapping("/getVerifiCodeImage")
     public void getVerifyCodeImage(HttpServletRequest request, HttpServletResponse response){
         //获取验证码图片
@@ -108,6 +170,7 @@ public class SystemController {
 
     }
 
+    @ApiOperation("登录")
     @PostMapping("/login")
     public Result login(HttpServletRequest request,@RequestBody LoginForm loginForm){
         HttpSession session = request.getSession();

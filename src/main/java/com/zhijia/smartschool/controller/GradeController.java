@@ -38,6 +38,7 @@ public class GradeController {
      * 查询所有的年级
      * @return
      */
+    @ApiOperation("查询所有的年级")
     @GetMapping("/getGrades")
     public Result getGrades(){
         List<Grade> list = gradeService.list();

@@ -30,6 +30,9 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+
+
+
     @ApiOperation("获取管理员列表")
     @GetMapping("/getAllAdmin/{pageNo}/{pageSize}")
     public Result getAllAdmin(@ApiParam("当前第几页") @PathVariable("pageNo") Integer pageNo,
